@@ -4,6 +4,7 @@
 
 using namespace std;
 
+
 int main() {
 	vector<vector<double>> inputSet = { {1.5, 2.0},
 																			{2.0, 3.5},
@@ -12,7 +13,8 @@ int main() {
 																			{4.5, 5.0},
 																			{5.0, 7.0},
 																			{5.5, 8.0},
-																			{6.0, 6.0} };
+																			{6.0, 6.0},
+																			{3.0, 4.0}};
 	vector<int> outputSet = {	-1,
 														-1,
 														-1,
@@ -20,13 +22,29 @@ int main() {
 														1,
 														1,
 														1,
-														1 };
+														1,
+														-1};
 	
 	Perceptron percept(2);
+	percept.setActivationFunction([](double value) {
+		if(value >= 0.)
+			return 1;
+		else
+			return -1;
+	});
+
+	unsigned int maxEpochs;
+	double alpha;
+
+	cout << "Max epochs: ";
+	cin >> maxEpochs;
+
+	cout << "Alpha: ";
+	cin >> alpha;
 
 	cout << "Starting perceptron training..." << endl;
 
-	percept.train(inputSet, outputSet, 0.001, 100);
+	percept.train(inputSet, outputSet, alpha, maxEpochs);
 
 	cout << "Training complete.\n" << endl;
 

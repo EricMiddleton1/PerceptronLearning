@@ -13,8 +13,14 @@ Perceptron::Perceptron(unsigned int _inputSize) {
 	bias = initializeRandom();
 }
 
-int Perceptron::computeOutput(vector<double> _inputs) {
-	if(_inputs.size() != weights.size()) {
+void Perceptron::setActivationFunction(const std::function<int(double)>&
+	_activationFunction) {
+
+	activation = _activationFunction;
+}
+
+int Perceptron::computeOutput(const vector<double>& _inputs) const {
+	if(_inputs.size() != weights.size() || !activation) {
 		//TODO: throw exception
 		return 0;
 	}
@@ -28,9 +34,16 @@ int Perceptron::computeOutput(vector<double> _inputs) {
 	return activation(sum);
 }
 
-void Perceptron::train(vector<vector<double>> _inputSet,
-	vector<int> _outputSet, double _alpha, unsigned int _maxEpoch) {
+void Perceptron::train(const vector<vector<double>>& _inputSet,
+	const vector<int>& _outputSet, double _alpha, unsigned int _maxEpoch) {
+
+	ofstream outputFile("PerceptronState.csv");
+	outputFile << "Interation";
+	for(unsigned int i = 0; i < weights.size(); ++i)
+		outputFile << ", weight" << i;
 	
+	outputFile << ", bias\n";
+
 	vector<unsigned int> indicies;
 	for(unsigned int i = 0; i < weights.size(); ++i) {
 		indicies.push_back(i);
@@ -45,10 +58,13 @@ void Perceptron::train(vector<vector<double>> _inputSet,
 
 			update(_inputSet[i], desired, computed, _alpha);
 		}
+
+		outputFile << epochs << ", ";
+		writeState(outputFile);
 	}
 }
 
-void Perceptron::update(vector<double> _inputs, int _desired,
+void Perceptron::update(const vector<double>& _inputs, int _desired,
 	int _computed, double _alpha) {
 
 	if(_desired == _computed)
@@ -69,16 +85,14 @@ void Perceptron::update(vector<double> _inputs, int _desired,
 	bias -= factor;
 }
 
-int Perceptron::activation(double _value) {
-	if(_value >= 0.)
-		return 1;
-	else
-		return -1;
-	
-	//return (_value >= 0.) ? 1 : -1;
-}
-
-double Perceptron::initializeRandom() {
+double Perceptron::initializeRandom() const {
 	return ((rand() % 10001) / 10000.) * (WEIGHT_MAX - WEIGHT_MIN)
 			+ WEIGHT_MIN;
+}
+
+void Perceptron::writeState(ofstream& file) const {
+	for(unsigned int i = 0; i < weights.size(); ++i)
+		file << weights[i] << ", ";
+	
+	file << bias << '\n';
 }
